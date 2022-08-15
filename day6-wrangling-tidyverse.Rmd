@@ -61,3 +61,112 @@ ggplot(data = wb_subset, aes(x = year, y = co2_emissions_kt)) +
 #exclude_this <- c("Algeria", "Barbados", "Bulgaria", "Chile")
 #wb_example  <- 
 ```
+
+## filtering rows
+
+Example 1: Filter to only keep exact matches
+
+```{r}
+ex_1 <- starwars |> 
+  filter(height > 180)
+```
+
+```{r}
+ex_2 <- starwars |> 
+  filter(eye_color == "blue")
+```
+
+```{r}
+ex_3 <- starwars |> 
+  filter(homeworld == "Naboo")
+```
+
+Examples: filtering to satisfy multiple conditions
+
+```{r}
+ex_4 <- starwars |> 
+  filter(height > 180 & homeworld == "Tatooine")
+```
+
+
+```{r}
+ex_5 <- starwars |> 
+  filter(hair_color == "brown" & species == "Human")
+```
+
+### Filtering OR statements, a row will get returned if ANY of your statements are true
+
+```{r}
+ex_6 <- starwars |> 
+  filter(height > 180 | eye_color == "yellow")
+```
+
+create a subset that keeps rows if homeworld is Endor or species is droid
+
+```{r}
+ex_7 <- starwars |> 
+  filter(homeworld == "Endor" | species == "Droid")
+```
+
+# OR statement using picking variables from same column
+
+```{r}
+ex_8 <- starwars |> 
+  filter(eye_color == "blue" | eye_color == "brown" | eye_color == "red")
+
+#More efficient OR statement
+#%in% every individual row, it will check i.e. row 1? blue? no, brown? no, red? no, next! VERSUS == it will cycle through the vectors given i.e. row 1 blue? next row 2 brown?
+ex_9 <- starwars |> 
+  filter(eye_color %in% c("blue", "brown", "red"))
+
+#THIS IS NEVER WHAT YOU WANT TO DO
+ex_10 <- starwars |> 
+  filter(eye_color == c("blue", "brown", "red"))
+#create a subset homeworld is Endor OR Tatooine or Naboo AND height <150 "," can also be seen as an &
+ex_11 <- starwars |> 
+  filter(homeworld %in% c("Endor", "Tatooine", "Naboo")
+         & height < 150)
+```
+
+Examples with the negate !
+
+```{r}
+ex_12 <- starwars |> 
+  filter(species != "Human")
+
+ex_13 <- starwars |> 
+  filter(!species %in% c("Human", "Ewok", "Wookiee"))
+```
+
+## `select()`: select or exclude columns
+
+```{r}
+ex_14 <- wb_clean |> 
+  select(country, year, co2_emissions_kt)
+
+ex_15 <- wb_clean |> 
+  select(year:fossil_fuel_cons_pct)
+
+ex_16 <- wb_clean |> 
+  select(year:fossil_fuel_cons_pct, -access_electricity_pp)
+```
+
+```{r}
+ex_17 <- wb_clean |> 
+  filter(country %in% c("Bolivia", "Chile", "Mexico")) |> 
+  select(country:fossil_fuel_cons_pct)
+```
+
+```{r}
+ex_18 <- wb_clean |> 
+  select(year_new = year,
+         emissions = co2_emissions_kt,
+         country_name = country)
+
+#Select only columns for country, year, and water stress, and reorder them as year, country water stress THEN filter to only include observations for any three countries of your choosing
+
+ex_19 <- wb_clean |> 
+  select(year, country, water_stress) |> 
+  filter(country %in% c("Australia", "Aruba", "Lebanon"))
+```
+
