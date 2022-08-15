@@ -1,0 +1,63 @@
+---
+title: "Data Wrangling in TidyR"
+author: "Ruth Enriquez"
+date: "2022-08-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+## Read in the WB data files
+
+```{r}
+wb_indicators <- read_csv(here::here("data", "wb_indicators.csv"), na = c("..", ""))
+wb_metadata <- read_csv(here("data", "wb_indicators_metadata.csv"))
+```
+
+### Making the `wb_indicators` table tidy, using `pivot_longer()`
+
+### pivot_longer() to get years into a single column
+
+```{r}
+wb_indicators_long <- wb_indicators |> 
+  pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
+               names_to = "year",
+               values_to = "indicator_value")
+```
+
+### Separate to clean up the year column
+
+### select is the column one, filter is the row one
+
+### use the unique() it'll tell you all the different unique levels
+
+### drop_na() does complete row's where it will be dropped
+
+### Widen the variables currently trapped in `Series Name` to be spread across multiple columns, and get the values that populate the columns from `indicator value`
+
+```{r}
+wb_clean <- wb_indicators_long |> 
+  separate(col = year, into = c("year", "year_chr"), sep = " ") |> 
+  select(-year_chr, -`Country Code`, -`Series Code`) |> 
+  mutate(year = as.numeric(year)) |> 
+  drop_na('Series Name') |> 
+  pivot_wider(names_from = 'Series Name', values_from = indicator_value)
+
+names(wb_clean) <- c("country", "year", "access_clean_fuels_pp", "access_electricity_pp", "co2_emissions_kt", "fossil_fuel_cons_pct", "water_stress")
+
+wb_subset <- wb_clean |> 
+  filter(country %in% c("Algeria", "Barbados", "Bulgaria", "Chile"))
+
+ggplot(data = wb_subset, aes(x = year, y = co2_emissions_kt)) +
+  geom_line(aes(color = country)) +
+  facet_wrap(~country)
+#if you wanted to exclude stuff
+#exclude_this <- c("Algeria", "Barbados", "Bulgaria", "Chile")
+#wb_example  <- 
+```
